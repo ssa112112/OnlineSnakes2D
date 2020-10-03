@@ -1,4 +1,7 @@
-﻿using Photon.Pun;
+﻿using ExitGames.Client.Photon;
+using Photon.Pun;
+using Photon.Pun.Demo.Cockpit;
+using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +20,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
+        //If we already connected then return
+        if (PhotonNetwork.NetworkingClient.LoadBalancingPeer.PeerState != PeerStateValue.Disconnected)
+            return;
+
         //Set settings
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.GameVersion = "0.0.1";
@@ -31,7 +38,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         ReportFail(message);
     }
-
+    
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
         ReportFail(message);
@@ -69,9 +76,22 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             errorDisplayTimeLeft -= Time.deltaTime;
     }
 
-    public static void CreateRoom(int roomID)
+    public static void CreateRoom(int roomID,int playersInRoom,int mapSize,int gameSpeed, int gameTime)
     {
-        PhotonNetwork.CreateRoom(roomID.ToString());
+        //Set properties
+        RoomOptions roomOptions = new RoomOptions();
+
+        roomOptions.MaxPlayers = (byte) playersInRoom; //MaxPlayers
+        roomOptions.CustomRoomProperties = new Hashtable
+        {
+            {RoomOptionKeys.PlayersInRoom, (byte) playersInRoom}, //MinPlayers, in this case == MaxPlayers
+            {RoomOptionKeys.MapSize, (byte) mapSize},
+            {RoomOptionKeys.GameSpeed, (byte) gameSpeed},
+            {RoomOptionKeys.GameTimeInSeconds, (byte) gameTime}
+        };
+
+        //Create room
+        PhotonNetwork.CreateRoom(roomID.ToString(),roomOptions);
     }
 
     public static void JoinRandomRoom()

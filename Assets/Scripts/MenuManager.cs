@@ -1,10 +1,13 @@
 ﻿using UnityEngine;
 using System;
+using UIControllers;
 
 public class MenuManager : MonoBehaviour
 {
    bool createGameButtonActivated, joinGameButtonActivated;
    [SerializeField] GameObject createGameCanvas, joinGameCanvas;
+   [SerializeField] IDInputUIController ID;
+   [SerializeField] LeftRightUIController players, mapSize, speed, time;
 
    /// <summary>
    /// Just activate/deactivate submenu
@@ -41,13 +44,13 @@ public class MenuManager : MonoBehaviour
    /// </summary>
    public static void ExitButtonPressed() 
    {
-#if (UNITY_EDITOR)
-      UnityEditor.EditorApplication.isPlaying = false;
-#elif (UNITY_WEBGL)
-      Application.OpenURL("about:blank");
-#else
-       Application.Quit();
-#endif
+      #if (UNITY_EDITOR)
+            UnityEditor.EditorApplication.isPlaying = false;
+      #elif (UNITY_WEBGL)
+            Application.OpenURL("about:blank");
+      #else
+            Application.Quit();
+      #endif
    }
    
    /// <summary>
@@ -63,7 +66,8 @@ public class MenuManager : MonoBehaviour
    /// </summary>
    public void CreateButtonPressed()
    {
-      NetworkManager.CreateRoom(roomID: UnityEngine.Random.Range(1, Int16.MaxValue));
+      NetworkManager.CreateRoom(roomID: UnityEngine.Random.Range(1, Int16.MaxValue),
+         players.GetCurrentValue(),mapSize.GetCurrentValue(),speed.GetCurrentValue(),time.GetCurrentValue());
    }
    
    /// <summary>
@@ -79,7 +83,7 @@ public class MenuManager : MonoBehaviour
    /// </summary>
    public void JoinRoomByIDButtonPressed()
    {
-      throw new NotImplementedException();
+      NetworkManager.JoinRoomByID(ID.GetCurrentInput());
    }
 
 }
