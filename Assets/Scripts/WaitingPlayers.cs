@@ -22,7 +22,6 @@ public class WaitingPlayers : MonoBehaviourPunCallbacks
      {
          byte countOfPlayersInRooms = PhotonNetwork.CurrentRoom.PlayerCount;
          byte needPlayersInRoom = (byte) PhotonNetwork.CurrentRoom.CustomProperties[RoomOptionKeys.PlayersInRoom];
-         
          connectedCountText.text =
              $"{countOfPlayersInRooms} of {needPlayersInRoom} connected";
          

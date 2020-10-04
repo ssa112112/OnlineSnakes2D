@@ -739,7 +739,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360344, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: maxValue
-      value: 3
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360344, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: step
@@ -747,7 +747,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360344, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: defaultValue
-      value: 2
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360346, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: m_Name
@@ -869,7 +869,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360344, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: defaultValue
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360346, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: m_Name
