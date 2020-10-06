@@ -76,12 +76,14 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
             gameField.ChangeSquareOfField(pointer, FieldSquareState.BodyOfSnake, actorID);
             nodeCoordinates.AddLast(new LinkedListNode<Vector2Int>(pointer));
         }
+
+        //Set start direction 
+        currentDirection = startPosition.Item2 == Direction.Left ? Direction.Right: Direction.Left;
     }
 
     public void Respawn((Vector2Int, Direction) startPosition)
     {
         Clear();
-        
         Spawn(startPosition);
     }
 
@@ -103,26 +105,27 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         else if (Input.GetAxis("Horizontal") < 0 && currentDirection != Direction.Right)
             inputDirection = Direction.Left;
 
-        if (Input.GetAxis("Vertical") < 0 && currentDirection != Direction.Down)
+        if (Input.GetAxis("Vertical") > 0 && currentDirection != Direction.Down)
             inputDirection = Direction.Up;
-        else if (Input.GetAxis("Vertical") > 0 && currentDirection != Direction.Up)
+        else if (Input.GetAxis("Vertical") < 0 && currentDirection != Direction.Up)
             inputDirection = Direction.Down;
     }
 
     public void MakeStepLocal(Direction to)
     {
         if (nodeCoordinates.Count == 0) return;
-        
+        if (to == Direction.Undefined) return;
+
         currentDirection = to;
 
         Vector2Int newGameFieldPosition = nodeCoordinates.First.Value;
         switch (currentDirection)
         {
             case Direction.Down:
-                newGameFieldPosition = newGameFieldPosition.DecrementY();
+                newGameFieldPosition = newGameFieldPosition.IncrementY();
                 break;
             case Direction.Up:
-                newGameFieldPosition = newGameFieldPosition.IncrementY();
+                newGameFieldPosition = newGameFieldPosition.DecrementY();
                 break;
             case Direction.Left:
                 newGameFieldPosition = newGameFieldPosition.DecrementX();
@@ -164,12 +167,10 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         {
             var sendData = new Object[] {actorID, respawnPosition.Value.Item1, respawnPosition.Value.Item2};
             PhotonNetwork.RaiseEvent(RemoteEventNames.SnakeDeadAndRespawn, sendData, raiseEventOptions, sendOptions);
-            Debug.Log("CreateRespawnEvent1");
         }
         else
         {
             PhotonNetwork.RaiseEvent(RemoteEventNames.SnakeDead, actorID, raiseEventOptions, sendOptions);
-            Debug.Log("CreateRespawnEvent2");
         }
     }
     

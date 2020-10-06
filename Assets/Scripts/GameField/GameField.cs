@@ -111,7 +111,7 @@ public class GameField : MonoBehaviour
     #region WorkWithField
 
     /// <summary>
-    /// Rewrite added position. Resolve collision.
+    /// Rewrite added position. Resolve collisions.
     /// </summary>
     /// <param name="fieldPosition"></param>
     /// <param name="newState"></param>

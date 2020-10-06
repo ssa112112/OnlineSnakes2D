@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ExitGames.Client.Photon;
 using UnityEngine;
@@ -55,7 +53,6 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         if (photonEvent.Code == RemoteEventNames.SnakeDeadAndRespawn)
         { 
-            Debug.Log("Apply respawn1");
             Object[] readData = (Object[]) photonEvent.CustomData;
             int actorID =(int) readData[0];
             Vector2Int spawnPoint = (Vector2Int) readData[1];
@@ -68,7 +65,6 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         if (photonEvent.Code == RemoteEventNames.SnakeDead)
         {
-            Debug.Log("Apply respawn2");
             Snakes[(int) photonEvent.CustomData - 1].Clear();
         }
     }
