@@ -33,25 +33,29 @@ public class WaitingPlayers : MonoBehaviourPunCallbacks
          byte needPlayersInRoom = (byte) PhotonNetwork.CurrentRoom.CustomProperties[RoomOptionKeys.PlayersInRoom];
          connectedCountText.text =
              $"{countOfPlayersInRooms} of {needPlayersInRoom} connected";
+         if (countOfPlayersInRooms == needPlayersInRoom) 
+             InitializeGame(countOfPlayersInRooms);
+     }
 
-         //Initialize play, if need
-         if (countOfPlayersInRooms == needPlayersInRoom)
-         {
-             //Create the Snake
-             PhotonNetwork.Instantiate(NamePlayerObject,transform.position,Quaternion.identity,
+     /// <summary>
+     /// Start the game
+     /// </summary>
+     void InitializeGame(int playersInRoom)
+     {
+         //Create the Snake
+         PhotonNetwork.Instantiate(NamePlayerObject,transform.position,Quaternion.identity,
                  0,new object[]{PhotonNetwork.LocalPlayer.GetPlayerNumber()+2});
-             rating.Initialize(needPlayersInRoom);
+         rating.Initialize(playersInRoom);
              
-             if (PhotonNetwork.IsMasterClient)
-             {
-                 //Deny join
-                 PhotonNetwork.CurrentRoom.IsOpen = false;
-                 //Create apple
-                 PhotonNetwork.InstantiateRoomObject(NameFruitObject, transform.position, Quaternion.identity);
-             }
-
-             //Destroy this object
-             Destroy(gameObject);
+         if (PhotonNetwork.IsMasterClient)
+         {
+             //Deny join
+             PhotonNetwork.CurrentRoom.IsOpen = false;
+             //Create apple
+             PhotonNetwork.InstantiateRoomObject(NameFruitObject, transform.position, Quaternion.identity);
          }
+
+         //Destroy this object
+         Destroy(gameObject);
      }
 }

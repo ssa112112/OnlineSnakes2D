@@ -9,7 +9,8 @@ using Photon.Realtime;
 using Object = System.Object;
 
 /// <summary>
-/// Keeps snakes (links) and makes snakes moved. Also controls reiting.
+/// Responsible for game loop.
+/// Keeps snakes (links) and makes snakes moved; handling and sends (if IsMasterClient) events and more.
 /// </summary>
 public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
@@ -25,7 +26,7 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
     
     double timeBetweenStep;
     double timeLastStep;
-    
+
     void Start()
     {
         //Save Time
@@ -33,7 +34,7 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
         //Apply game speed
         byte gameSpeed = (byte) PhotonNetwork.CurrentRoom.CustomProperties[RoomOptionKeys.GameSpeed];
         timeBetweenStep = 0.9d - gameSpeed/10d; //0.9d just magic number (works normal for ping 100ms and less in max speed) 
-        //Clear data
+        //Clear data from old game
         Snakes?.Clear();
         Fruit = null;
     }
@@ -47,6 +48,55 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
             timeLastStep = PhotonNetwork.Time;
         }
     }
+
+    #region ObjectRegisterMethods
+
+    /// <summary>
+    /// Register the snake in the Snakes list
+    /// </summary>
+    /// <param name="snake"></param>
+    /// <returns></returns>
+    public static bool RegisterSnakeScript(Snake snake)
+    {
+        if (Snakes == null)
+            Snakes = new List<Snake>(4);
+        
+        if (snake == null || Snakes.Contains(snake))
+            return false;
+        
+        Snakes.Add(snake);
+
+        Snakes = Snakes.OrderBy(s => s.GetActorIDOfCreator()).ToList();
+        
+        return true;
+    }
+
+    /// <summary>
+    /// Register the fruit
+    /// </summary>
+    /// <param name="fruit"></param>
+    public static void RegisterFruit(Fruit fruit)
+    {
+        Fruit = fruit;
+    }
+    
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        //Unregister snake
+        var actorID = otherPlayer.GetPlayerNumber();
+        for (var i = 0; i < Snakes.Count; i++)
+        {
+            if (Snakes[i].GetActorIDOfCreator() == actorID)
+            {
+                Snakes.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
+    #endregion
+
+    #region HandlingInComingRemoteEvents
 
     public void OnEvent(EventData photonEvent)
     {
@@ -84,7 +134,9 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
             rating.AddScore(PointsForFruit,actorID);
         }
     }
-    
+
+    #endregion
+
     /// <summary>
     /// Send everyone the command for make a step (authoritarian)
     /// </summary>
@@ -104,35 +156,6 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
     }
 
     /// <summary>
-    /// Register the snake in the Snakes list
-    /// </summary>
-    /// <param name="snake"></param>
-    /// <returns></returns>
-    public static bool RegisterSnakeScript(Snake snake)
-    {
-        if (Snakes == null)
-            Snakes = new List<Snake>(4);
-        
-        if (snake == null || Snakes.Contains(snake))
-            return false;
-        
-        Snakes.Add(snake);
-
-        Snakes = Snakes.OrderBy(s => s.GetActorIDOfCreator()).ToList();
-        
-        return true;
-    }
-
-    /// <summary>
-    /// Register the fruit
-    /// </summary>
-    /// <param name="fruit"></param>
-    public static void RegisterFruit(Fruit fruit)
-    {
-        Fruit = fruit;
-    }
-    
-    /// <summary>
     /// Create a sync event with info about the fruit and its collector
     /// </summary>
     /// <param name="actorIDWhoCollected"></param>
@@ -146,25 +169,13 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
         PhotonNetwork.RaiseEvent(RemoteEventNames.FruitCollected, sendData, raiseEventOptions, sendOptions);
     }
 
-    public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
-        //Unregister snake
-        var actorID = otherPlayer.GetPlayerNumber();
-        for (var i = 0; i < Snakes.Count; i++)
-        {
-            if (Snakes[i].GetActorIDOfCreator() == actorID)
-            {
-                Snakes.RemoveAt(i);
-                return;
-            }
-        }
-    }
-
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(0);
     }
 
+    #region OnEnable/OnDisable
+    
     public override void OnEnable()
     {
         PhotonNetwork.AddCallbackTarget(this);
@@ -176,4 +187,7 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
         PhotonNetwork.RemoveCallbackTarget(this);
         base.OnDisable();
     }
+
+    #endregion
+
 }

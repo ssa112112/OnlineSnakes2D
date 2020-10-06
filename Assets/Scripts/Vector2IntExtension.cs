@@ -53,8 +53,7 @@ public static class Vector2IntExtension
         where[1]--;
         return where;
     }
-
-   // DeserializeMethod;
+    
    public static object DeserializeVector2Int(byte[] data)
    {
        Vector2Int result = new Vector2Int();

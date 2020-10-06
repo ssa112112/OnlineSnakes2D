@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 public enum Direction
 {
     Up,
@@ -9,7 +8,7 @@ public enum Direction
     Undefined
 }
 
-public class DirectionSerialize
+public static class DirectionSerialize
 {
     public static object DeserializeDirection(byte[] data)
     {

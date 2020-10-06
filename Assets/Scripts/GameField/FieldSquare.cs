@@ -4,7 +4,7 @@ public class FieldSquare
 {
     public FieldSquareState SquareState {get; private set;}
     readonly SpriteRenderer spriteRenderer;
-    public int ActorID { get; private set; } //0 is "general actor"
+    public int ActorID { get; private set; } //0 is "general actor"; 1,2,3,4 - players
     
     /// <summary>
     /// Create empty FieldSquare
@@ -21,7 +21,7 @@ public class FieldSquare
     /// Change state. Used force mode.
     /// </summary>
     /// <param name="newState"></param>
-    /// <param name="actorID">0 is "general actor"</param>
+    /// <param name="actorID">0 is "general actor"; 1,2,3,4 - players</param>
     public void ChangeState(FieldSquareState newState,int actorID)
     {
         SquareState = newState;

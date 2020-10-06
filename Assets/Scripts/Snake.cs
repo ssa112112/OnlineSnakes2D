@@ -10,30 +10,18 @@ using Object = System.Object;
 /// </summary>
 public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
 {
-    GameField gameField;
+    GameField gameField; //Link
 
     Direction inputDirection = Direction.Undefined; //pressed
     Direction currentDirection = Direction.Undefined; //pressed and applied 
 
     [SerializeField] int actorID; //Creator of this object
 
-    const int StartLenght = 3;
+    const int StartLenght = 3; //Supported value from 2 to 7 (not tested)
 
     LinkedList<Vector2Int> nodeCoordinates = new LinkedList<Vector2Int>(); //Coordinates of nodes. Head always first.
 
-    bool grow; //If this snake eat fruit, this bool become true and its grow;
-
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(inputDirection);
-        }
-        else
-        {
-            inputDirection = (Direction) stream.ReceiveNext();
-        }
-    }
+    bool grow; //If this snake eat fruit, this bool become true ( addNode() ) and its grow;
 
     void Start()
     {
@@ -48,7 +36,27 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         //Spawn
         Spawn(gameField.GetStartPositionForSnakeByID(actorID, StartLenght));
     }
+    
+    #region Geters
+    
+    public int GetActorIDOfCreator()
+    {
+        return actorID;
+    }
 
+    public Direction GetCurrentInputDirection()
+    {
+        return inputDirection;
+    }
+
+    public int GetCurrentLenght()
+    {
+        return nodeCoordinates.Count;
+    }
+
+    #endregion
+
+    #region MethodsForChangeSnake
 
     /// <summary>
     /// Restore snake for default position
@@ -71,10 +79,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         //Spawn nodes
         for (int i = 0; i < StartLenght - 1; i++) //-1 because head is already spawn 
         {
-            if (startPosition.Item2 == Direction.Left)
-                pointer = pointer.DecrementX();
-            else
-                pointer = pointer.IncrementX();
+            pointer = startPosition.Item2 == Direction.Left ? pointer.DecrementX() : pointer.IncrementX();
             gameField.ChangeSquareOfField(pointer, FieldSquareState.BodyOfSnake, actorID);
             nodeCoordinates.AddLast(new LinkedListNode<Vector2Int>(pointer));
         }
@@ -88,31 +93,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         Clear();
         Spawn(startPosition);
     }
-
-    void Update()
-    {
-        if (photonView.IsMine)
-            HandlingInput();
-    }
-
-    void HandlingInput()
-    {
-        KeyboardInput();
-    }
-
-    void KeyboardInput()
-    {
-        if (Input.GetAxis("Horizontal") > 0 && currentDirection != Direction.Left)
-            inputDirection = Direction.Right;
-        else if (Input.GetAxis("Horizontal") < 0 && currentDirection != Direction.Right)
-            inputDirection = Direction.Left;
-
-        if (Input.GetAxis("Vertical") > 0 && currentDirection != Direction.Down)
-            inputDirection = Direction.Up;
-        else if (Input.GetAxis("Vertical") < 0 && currentDirection != Direction.Up)
-            inputDirection = Direction.Down;
-    }
-
+    
     public void MakeStepLocal(Direction to)
     {
         if (nodeCoordinates.Count == 0) return;
@@ -161,7 +142,44 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         gameField.ChangeSquareOfField(nodeCoordinates.Last.Value, FieldSquareState.Empty, actorID);
         nodeCoordinates.RemoveLast();
     }
+    
+    public void AddNode()
+    {
+        grow = true;
+    }
 
+    #endregion
+
+    #region HanglingInput
+    
+    void Update()
+    {
+        if (photonView.IsMine)
+            HandlingInput();
+    }
+
+    void HandlingInput()
+    {
+        KeyboardInput();
+    }
+
+    void KeyboardInput()
+    {
+        if (Input.GetAxis("Horizontal") > 0 && currentDirection != Direction.Left)
+            inputDirection = Direction.Right;
+        else if (Input.GetAxis("Horizontal") < 0 && currentDirection != Direction.Right)
+            inputDirection = Direction.Left;
+
+        if (Input.GetAxis("Vertical") > 0 && currentDirection != Direction.Down)
+            inputDirection = Direction.Up;
+        else if (Input.GetAxis("Vertical") < 0 && currentDirection != Direction.Up)
+            inputDirection = Direction.Down;
+    }
+
+    #endregion
+
+    #region NetwotkingMethods
+    
     public void CreateRespawnEvent()
     {
         if (!PhotonNetwork.IsMasterClient) return;
@@ -180,25 +198,17 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
             PhotonNetwork.RaiseEvent(RemoteEventNames.SnakeDead, actorID, raiseEventOptions, sendOptions);
         }
     }
-
-    public void AddNode()
-    {
-        grow = true;
-    }
     
-    public int GetActorIDOfCreator()
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        return actorID;
-    }
-
-    public Direction GetCurrentInputDirection()
-    {
-        return inputDirection;
-    }
-
-    public int GetCurrentLenght()
-    {
-        return nodeCoordinates.Count;
+        if (stream.IsWriting)
+        {
+            stream.SendNext(inputDirection);
+        }
+        else
+        {
+            inputDirection = (Direction) stream.ReceiveNext();
+        }
     }
 
     public void OnEvent(EventData photonEvent) { }  //Only created Event
@@ -214,4 +224,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         PhotonNetwork.RemoveCallbackTarget(this);
         base.OnDisable();
     }
+    
+    #endregion
+    
 }

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
-using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +13,10 @@ public class Rating : MonoBehaviourPunCallbacks
     const string YouPrefix = "YOU - ";
     const string OpponentPrefix = "FOE - ";
 
+    /// <summary>
+    /// Initialize when all players on place
+    /// </summary>
+    /// <param name="playersInRoom"></param>
     public void Initialize(int playersInRoom)
     {
         //Save playersCount

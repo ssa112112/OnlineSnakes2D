@@ -162,7 +162,7 @@ public class GameField : MonoBehaviour
     /// <returns>Vector2Int for the Snake and Direction for draw tail</returns>
     public (Vector2Int , Direction) GetStartPositionForSnakeByID(int actorID, int startLenght)
     {
-        var resultDirection = Direction.Undefined;
+        Direction resultDirection;
         var resultPoint = new Vector2Int();
         
         if (actorID == 1 || actorID == 3)
@@ -335,5 +335,6 @@ public class GameField : MonoBehaviour
         
         return randomFreePosition;
     }
+    #endregion
 }
-#endregion
+

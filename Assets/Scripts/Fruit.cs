@@ -13,8 +13,9 @@ public class Fruit : MonoBehaviour
         gameField = GameObject.FindWithTag("GameField").GetComponent<GameField>();
 
         //Set default position 
-        gameField.ChangeSquareOfField(gameField.Center, FieldSquareState.Fruit, ActorID);
-        
+        GameFieldPosition = gameField.Center;
+        gameField.ChangeSquareOfField(GameFieldPosition, FieldSquareState.Fruit, ActorID);
+
         //Registration
         GameplayManager.RegisterFruit(this);
     }
