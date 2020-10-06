@@ -1,4 +1,6 @@
-﻿public enum Direction
+﻿using System;
+
+public enum Direction
 {
     Up,
     Down,
@@ -6,3 +8,20 @@
     Right,
     Undefined
 }
+
+public class DirectionSerialize
+{
+    public static object DeserializeDirection(byte[] data)
+    {
+        return (Direction) data[0];
+    }
+
+    public static byte[] SerializeDirection(object obj)
+    {
+        Direction direction = (Direction) obj;
+        byte[] result = new byte[1];
+        result[0] = (byte) direction;
+        return result;
+    }
+}
+

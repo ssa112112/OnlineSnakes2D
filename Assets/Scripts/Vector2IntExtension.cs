@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public static class Vector2IntExtension
 {
@@ -52,5 +53,27 @@ public static class Vector2IntExtension
         where[1]--;
         return where;
     }
+
+   // DeserializeMethod;
+   public static object DeserializeVector2Int(byte[] data)
+   {
+       Vector2Int result = new Vector2Int();
+
+       result.x = BitConverter.ToInt32(data, 0);
+       result.y = BitConverter.ToInt32(data, 4);
+
+       return result;
+   }
+
+   public static byte[] SerializeVector2Int(object obj)
+   {
+       Vector2Int vector2Int = (Vector2Int) obj;
+       byte[] result = new byte[8];
+       
+       BitConverter.GetBytes(vector2Int.x).CopyTo(result,0);
+       BitConverter.GetBytes(vector2Int.y).CopyTo(result,4);
+
+       return result;
+   }
     
 }

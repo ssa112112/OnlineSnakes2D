@@ -324,6 +324,7 @@ GameObject:
   - component: {fileID: 333696813}
   - component: {fileID: 333696812}
   - component: {fileID: 333696814}
+  - component: {fileID: 333696815}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -379,6 +380,19 @@ MonoBehaviour:
   connectionStatusText: {fileID: 1123628734}
   createGameButton: {fileID: 2103183965}
   joinGameButton: {fileID: 565568651}
+--- !u!114 &333696815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 333696811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b28dd60f6abf16d4094cf0f642a043e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dontDestroyOnLoad: 0
 --- !u!1 &433386982
 GameObject:
   m_ObjectHideFlags: 0
@@ -739,7 +753,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360344, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: maxValue
-      value: 9
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5590206580414360344, guid: d97d2eb033362e844b617d33f4bb8ae3, type: 3}
       propertyPath: step

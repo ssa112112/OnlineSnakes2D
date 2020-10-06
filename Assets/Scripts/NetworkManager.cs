@@ -1,6 +1,5 @@
 ﻿using ExitGames.Client.Photon;
 using Photon.Pun;
-using Photon.Pun.Demo.Cockpit;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,6 +26,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         //Set settings
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.GameVersion = "0.0.1";
+        
+        //Register "custom" type for sync
+        PhotonPeer.RegisterType(typeof(Vector2Int), 99, Vector2IntExtension.SerializeVector2Int,
+            Vector2IntExtension.DeserializeVector2Int);
+        PhotonPeer.RegisterType(typeof(Direction), 100, DirectionSerialize.SerializeDirection,
+            DirectionSerialize.DeserializeDirection);
         
         //Connect
         PhotonNetwork.ConnectUsingSettings();
