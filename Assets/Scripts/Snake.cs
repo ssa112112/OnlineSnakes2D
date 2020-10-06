@@ -21,6 +21,8 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
 
     LinkedList<Vector2Int> nodeCoordinates = new LinkedList<Vector2Int>(); //Coordinates of nodes. Head always first.
 
+    bool grow; //If this snake eat fruit, this bool become true and its grow;
+
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
@@ -150,7 +152,12 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
             CreateRespawnEvent();
             return;
         }
-        //Clear tail
+        //Clear tail, if grow is false, else growing
+        if (grow)
+        {
+            grow = false;
+            return;
+        }
         gameField.ChangeSquareOfField(nodeCoordinates.Last.Value, FieldSquareState.Empty, actorID);
         nodeCoordinates.RemoveLast();
     }
@@ -172,6 +179,11 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         {
             PhotonNetwork.RaiseEvent(RemoteEventNames.SnakeDead, actorID, raiseEventOptions, sendOptions);
         }
+    }
+
+    public void AddNode()
+    {
+        grow = true;
     }
     
     public int GetActorIDOfCreator()

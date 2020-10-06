@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Photon.Pun;
 using Random = UnityEngine.Random;
 
@@ -130,7 +131,7 @@ public class GameField : MonoBehaviour
             switch (field[fieldPosition.x,fieldPosition.y].SquareState)
             {
                 case FieldSquareState.Fruit:
-                    //TODO
+                    GameplayManager.FruitCollected(actorID,RandomFreePosition());
                     break;
                 case FieldSquareState.BodyOfSnake:
                     return false;
@@ -300,6 +301,39 @@ public class GameField : MonoBehaviour
         }
     }
 
-    #endregion
-    
+    /// <summary>
+    /// Return coordinates of center of field 
+    /// </summary>
+    public Vector2Int Center
+    {
+        get
+        {
+            var centerPoint = field.GetUpperBound(0) / 2;
+            return new Vector2Int(centerPoint,centerPoint);
+        }
+    }
+
+    /// <summary>
+    /// Random free position in the game field
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public Vector2Int RandomFreePosition()
+    {
+        Vector2Int randomFreePosition;
+        int maxTries = 250;
+        int currentTry = 0; 
+        
+        do
+        {
+            randomFreePosition = new Vector2Int(Random.Range(0,field.GetUpperBound(0)),
+                Random.Range(0,field.GetUpperBound(0)));
+            currentTry++;
+            if (currentTry >= maxTries)
+                throw new Exception("Can't get a random position in the game field");
+        } while (!CheckSquareState(randomFreePosition,FieldSquareState.Empty));
+        
+        return randomFreePosition;
+    }
 }
+#endregion

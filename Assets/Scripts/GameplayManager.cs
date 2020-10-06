@@ -17,6 +17,8 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
     /// Sorted (by snake.actorID) actuality list of snake scripts
     /// </summary>
     public static List<Snake> Snakes { get; private set; }
+
+    public static Fruit Fruit{ get; private set;}
     
     double timeBetweenStep;
     double timeLastStep;
@@ -28,8 +30,9 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
         //Apply game speed
         byte gameSpeed = (byte) PhotonNetwork.CurrentRoom.CustomProperties[RoomOptionKeys.GameSpeed];
         timeBetweenStep = 0.9d - gameSpeed/10d; //0.9d just magic number (works normal for ping 100ms and less in max speed) 
-        //Clear list of snakes, if need
+        //Clear data
         Snakes?.Clear();
+        Fruit = null;
     }
 
     void Update()
@@ -66,6 +69,15 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
         if (photonEvent.Code == RemoteEventNames.SnakeDead)
         {
             Snakes[(int) photonEvent.CustomData - 1].Clear();
+        }
+
+        if (photonEvent.Code == RemoteEventNames.FruitCollected)
+        {
+            Object[] readData = (Object[]) photonEvent.CustomData;
+            int actorID = (int) readData[0];
+            Vector2Int newFruitPosition = (Vector2Int) readData[1];
+            Fruit.ChangeGameFieldPosition(newFruitPosition);
+            Snakes[actorID-1].AddNode();
         }
     }
     
@@ -105,6 +117,29 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
         Snakes = Snakes.OrderBy(s => s.GetActorIDOfCreator()).ToList();
         
         return true;
+    }
+
+    /// <summary>
+    /// Register the fruit
+    /// </summary>
+    /// <param name="fruit"></param>
+    public static void RegisterFruit(Fruit fruit)
+    {
+        Fruit = fruit;
+    }
+    
+    /// <summary>
+    /// Create a sync event with info about the fruit and its collector
+    /// </summary>
+    /// <param name="actorIDWhoCollected"></param>
+    /// <param name="newFruitPosition"></param>
+    public static void FruitCollected(int actorIDWhoCollected, Vector2Int newFruitPosition)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        var sendData = new Object[] {actorIDWhoCollected, newFruitPosition};
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions {Receivers = ReceiverGroup.All};
+        SendOptions sendOptions = new SendOptions {Reliability = true};
+        PhotonNetwork.RaiseEvent(RemoteEventNames.FruitCollected, sendData, raiseEventOptions, sendOptions);
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)

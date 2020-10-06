@@ -4,12 +4,17 @@ using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Wait all players and start the game, when need
+/// </summary>
 public class WaitingPlayers : MonoBehaviourPunCallbacks
 {
      [SerializeField] Text connectedCountText;
      [SerializeField] Text roomNumberText;
 
-     const string NamePlayerObject = "Snake"; //Create after end of waiting
+     //Create after end of waiting
+     const string NamePlayerObject = "Snake"; 
+     const string NameFruitObject = "Fruit";
 
      void Start()
      {
@@ -28,6 +33,7 @@ public class WaitingPlayers : MonoBehaviourPunCallbacks
          connectedCountText.text =
              $"{countOfPlayersInRooms} of {needPlayersInRoom} connected";
 
+         //Initialize play, if need
          if (countOfPlayersInRooms == needPlayersInRoom)
          {
              //Create the Snake
@@ -38,6 +44,8 @@ public class WaitingPlayers : MonoBehaviourPunCallbacks
              {
                  //Deny join
                  PhotonNetwork.CurrentRoom.IsOpen = false;
+                 //Create apple
+                 PhotonNetwork.InstantiateRoomObject(NameFruitObject, transform.position, Quaternion.identity);
              }
 
              //Destroy this object
