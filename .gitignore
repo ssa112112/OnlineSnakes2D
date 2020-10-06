@@ -61,7 +61,3 @@ crashlytics-build.properties
 
 # Ridder cache directory
 .idea/
-
-# Photon Asset
-/Assets/Photon/*
-!/Assets/Photon/PhotonLibs
