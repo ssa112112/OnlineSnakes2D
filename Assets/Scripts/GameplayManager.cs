@@ -9,10 +9,13 @@ using Photon.Realtime;
 using Object = System.Object;
 
 /// <summary>
-/// Keeps snakes (links) and makes snakes moved
+/// Keeps snakes (links) and makes snakes moved. Also controls reiting.
 /// </summary>
 public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
+    [SerializeField] Rating rating;
+    const int PointsForFruit = 5;
+    
     /// <summary>
     /// Sorted (by snake.actorID) actuality list of snake scripts
     /// </summary>
@@ -78,6 +81,7 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
             Vector2Int newFruitPosition = (Vector2Int) readData[1];
             Fruit.ChangeGameFieldPosition(newFruitPosition);
             Snakes[actorID-1].AddNode();
+            rating.AddScore(PointsForFruit,actorID);
         }
     }
     

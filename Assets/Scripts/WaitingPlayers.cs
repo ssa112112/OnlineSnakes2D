@@ -11,6 +11,7 @@ public class WaitingPlayers : MonoBehaviourPunCallbacks
 {
      [SerializeField] Text connectedCountText;
      [SerializeField] Text roomNumberText;
+     [SerializeField] Rating rating;
 
      //Create after end of waiting
      const string NamePlayerObject = "Snake"; 
@@ -39,6 +40,7 @@ public class WaitingPlayers : MonoBehaviourPunCallbacks
              //Create the Snake
              PhotonNetwork.Instantiate(NamePlayerObject,transform.position,Quaternion.identity,
                  0,new object[]{PhotonNetwork.LocalPlayer.GetPlayerNumber()+2});
+             rating.Initialize(needPlayersInRoom);
              
              if (PhotonNetwork.IsMasterClient)
              {
