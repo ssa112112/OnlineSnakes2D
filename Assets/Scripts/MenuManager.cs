@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using Photon.Pun;
 using UIControllers;
 
 public class MenuManager : MonoBehaviour
@@ -44,6 +45,8 @@ public class MenuManager : MonoBehaviour
    /// </summary>
    public static void ExitButtonPressed() 
    {
+      PhotonNetwork.Disconnect();
+      
       #if (UNITY_EDITOR)
             UnityEditor.EditorApplication.isPlaying = false;
       #elif (UNITY_WEBGL)

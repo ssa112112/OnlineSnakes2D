@@ -32,19 +32,7 @@ public class Rating : MonoBehaviourPunCallbacks
         //Display!
         Display();
     }
-
-    void Display()
-    {
-        for (var i = playersInRoom-1; i >= 0; i--)
-        {
-            string prefix = ratingJournal[i].IsMine ? YouPrefix : OpponentPrefix;
-            //Set text
-            ratingBoard[i].text = $"{i+1}) {prefix}{ratingJournal[i].Score}";
-            //Set color
-            ratingBoard[i].color = ColorByActorID.Get(ratingJournal[i].ActorID);
-        }
-    }
-
+    
     /// <summary>
     /// Add score fot the snake. Auto update display.
     /// </summary>
@@ -59,6 +47,23 @@ public class Rating : MonoBehaviourPunCallbacks
         }
         SortJournal();
         Display();
+    }
+
+    public bool AmIFist()
+    {
+        return ratingJournal[0].IsMine;
+    }
+
+    void Display()
+    {
+        for (var i = playersInRoom-1; i >= 0; i--)
+        {
+            string prefix = ratingJournal[i].IsMine ? YouPrefix : OpponentPrefix;
+            //Set text
+            ratingBoard[i].text = $"{i+1}) {prefix}{ratingJournal[i].Score}";
+            //Set color
+            ratingBoard[i].color = ColorByActorID.Get(ratingJournal[i].ActorID);
+        }
     }
 
     void SortJournal()

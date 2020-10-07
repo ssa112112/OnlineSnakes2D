@@ -3,9 +3,11 @@ using System.Linq;
 using ExitGames.Client.Photon;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
+using Unity.Mathematics;
 using Object = System.Object;
 
 /// <summary>
@@ -15,8 +17,14 @@ using Object = System.Object;
 public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     [SerializeField] Rating rating;
+    [SerializeField] Text timeLeftText;
+    [SerializeField] GameObject gameOverMessageBox;
+
     const int PointsForFruit = 5;
-    
+    const string TimePrefix = "TIME LEFT: ";
+    const string GameWonText = "YOU ARE WON";
+    const string GameLoseText = "YOU ARE LOSE";
+
     /// <summary>
     /// Sorted (by snake.actorID) actuality list of snake scripts
     /// </summary>
@@ -26,27 +34,50 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
     
     double timeBetweenStep;
     double timeLastStep;
+    float timeLeft;
+
+    bool gameOver;
 
     void Start()
     {
         //Save Time
         timeLastStep = PhotonNetwork.Time;
+        
         //Apply game speed
         byte gameSpeed = (byte) PhotonNetwork.CurrentRoom.CustomProperties[RoomOptionKeys.GameSpeed];
         timeBetweenStep = 0.9d - gameSpeed/10d; //0.9d just magic number (works normal for ping 100ms and less in max speed) 
+        
         //Clear data from old game
         Snakes?.Clear();
         Fruit = null;
+        
+        //Set TimeLeft to start value 
+        timeLeft = (byte) PhotonNetwork.CurrentRoom.CustomProperties[RoomOptionKeys.GameTimeInSeconds];
+        timeLeftText.text = TimePrefix + math.round(timeLeft);
     }
 
     void Update()
     {
-        if (PhotonNetwork.Time > timeLastStep + timeBetweenStep && PhotonNetwork.CurrentRoom.IsOpen == false)
+        //Don't update until the game has started or the game already end
+        if (PhotonNetwork.CurrentRoom.IsOpen || gameOver)
+            return;
+        
+        //Make global step, if this is the master client. 
+        //Handling steps in any case (because we can become master) 
+        if (PhotonNetwork.Time > timeLastStep + timeBetweenStep)
         {
             if (PhotonNetwork.IsMasterClient)
                 MakeStepGlobal();
             timeLastStep = PhotonNetwork.Time;
         }
+        
+        //Reduce timeLeft
+        timeLeft -= Time.deltaTime;
+        timeLeftText.text = TimePrefix + math.round(timeLeft);
+        
+        //Check conditions of the game end
+        if (timeLeft <= 0) 
+            CompleteGame(timeIsEnd: true);
     }
 
     #region ObjectRegisterMethods
@@ -171,7 +202,19 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public override void OnLeftRoom()
     {
+        gameObject.SetActive(false);
         SceneManager.LoadScene(0);
+    }
+
+    void CompleteGame(bool timeIsEnd)
+    {
+        //Create message box
+        var gameOverMessageBoxLink = Instantiate(gameOverMessageBox);
+        var gameOverText = gameOverMessageBoxLink.GetComponentInChildren<Text>();
+        gameOverText.text = rating.AmIFist() ? GameWonText : GameLoseText;
+
+        //Stop the game
+        gameOver = true;
     }
 
     #region OnEnable/OnDisable
