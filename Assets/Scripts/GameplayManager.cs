@@ -125,6 +125,7 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
             return;
 
         var actorID = (int) otherPlayer.CustomProperties[PlayerOptionKeys.ActorID];
+
         for (var i = 0; i < Snakes.Count; i++)
         {
             if (Snakes[i].GetActorIDOfCreator() == actorID)
@@ -132,6 +133,7 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 Snakes[i].Clear();
                 Snakes[i].Disconnect = true;
                 rating.PlayerLeft(actorID);
+                //End game if need
                 if (Snakes.Count(s => !s.Disconnect) < 2)
                     CompleteGame(timeIsEnd: false);
                 return;

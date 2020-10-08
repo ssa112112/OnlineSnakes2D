@@ -74,6 +74,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         currentDirection = Direction.Undefined;
         gameField.ClearByID(actorID);
         nodeCoordinates.Clear();
+        VirtualInput.VisualizationInput(Direction.Undefined);
     }
 
     void Spawn((Vector2Int, Direction) startPosition)
@@ -169,13 +170,16 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
 
     void HandlingInput()
     {
-        Direction newInputDirection;
-
-        newInputDirection = TouchInput();
+        //Get a direction
+        var newInputDirection = TouchInput();
+        
         if (newInputDirection == Direction.Undefined)
             newInputDirection = KeyboardInput();
-
-
+        
+        if (newInputDirection == Direction.Undefined)
+            newInputDirection = VirtualInput.GetDirection();
+        
+        //Saved only if the snake can go there
         switch (newInputDirection)
         {
             case Direction.Right when currentDirection != Direction.Left:
@@ -191,6 +195,8 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
                 inputDirection = Direction.Down;
                 break;
         }
+        
+        VirtualInput.VisualizationInput(inputDirection);
     }
 
     Direction KeyboardInput()
