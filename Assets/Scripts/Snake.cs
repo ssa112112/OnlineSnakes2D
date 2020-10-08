@@ -16,6 +16,8 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
 
     Direction inputDirection = Direction.Undefined; //pressed
     Direction currentDirection = Direction.Undefined; //pressed and applied 
+    Vector2 touchStarted; //Support handling touch and mouse input 
+    Camera mainCamera; //Support handling touch and mouse input 
 
     [SerializeField] int actorID; //Creator of this object
 
@@ -30,6 +32,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
     void Start()
     {
         gameField = GameObject.FindWithTag("GameField").GetComponent<GameField>();
+        mainCamera = Camera.main;
 
         //Getting actorID
         actorID = (int) photonView.InstantiationData[0];
@@ -40,9 +43,9 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         //Spawn
         Spawn(gameField.GetStartPositionForSnakeByID(actorID, StartLenght));
     }
-    
+
     #region Geters
-    
+
     public int GetActorIDOfCreator()
     {
         return actorID;
@@ -89,7 +92,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         }
 
         //Set start direction 
-        currentDirection = startPosition.Item2 == Direction.Left ? Direction.Right: Direction.Left;
+        currentDirection = startPosition.Item2 == Direction.Left ? Direction.Right : Direction.Left;
     }
 
     public void Respawn((Vector2Int, Direction) position)
@@ -97,7 +100,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         Clear();
         Spawn(position);
     }
-    
+
     public void MakeStepLocal(Direction to)
     {
         if (nodeCoordinates.Count == 0) return;
@@ -124,7 +127,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
                 return;
         }
 
-        //Now it's second square, means it's body, not head
+        //Now it's the second square, means it's body, not head
         gameField.ChangeSquareOfField(nodeCoordinates.First.Value, FieldSquareState.BodyOfSnake, actorID);
         //Write new head
         nodeCoordinates.AddFirst(new LinkedListNode<Vector2Int>(newGameFieldPosition));
@@ -137,16 +140,18 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
             CreateRespawnEvent();
             return;
         }
+
         //Clear tail, if grow is false, else growing
         if (grow)
         {
             grow = false;
             return;
         }
+
         gameField.ChangeSquareOfField(nodeCoordinates.Last.Value, FieldSquareState.Empty, actorID);
         nodeCoordinates.RemoveLast();
     }
-    
+
     public void AddNode()
     {
         grow = true;
@@ -155,7 +160,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
     #endregion
 
     #region HanglingInput
-    
+
     void Update()
     {
         if (photonView.IsMine)
@@ -164,23 +169,67 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
 
     void HandlingInput()
     {
-        KeyboardInput();
+        Direction newInputDirection;
+
+        newInputDirection = TouchInput();
+        if (newInputDirection == Direction.Undefined)
+            newInputDirection = KeyboardInput();
+
+
+        switch (newInputDirection)
+        {
+            case Direction.Right when currentDirection != Direction.Left:
+                inputDirection = Direction.Right;
+                break;
+            case Direction.Left when currentDirection != Direction.Right:
+                inputDirection = Direction.Left;
+                break;
+            case Direction.Up when currentDirection != Direction.Down:
+                inputDirection = Direction.Up;
+                break;
+            case Direction.Down when currentDirection != Direction.Up:
+                inputDirection = Direction.Down;
+                break;
+        }
     }
 
-    void KeyboardInput()
+    Direction KeyboardInput()
     {
-        if (Input.GetAxis("Horizontal") > 0 && currentDirection != Direction.Left)
-            inputDirection = Direction.Right;
-        else if (Input.GetAxis("Horizontal") < 0 && currentDirection != Direction.Right)
-            inputDirection = Direction.Left;
+        if (Input.GetAxis("Horizontal") > 0)
+            return Direction.Right;
+        if (Input.GetAxis("Horizontal") < 0)
+            return Direction.Left;
+        if (Input.GetAxis("Vertical") > 0)
+            return Direction.Up;
+        if (Input.GetAxis("Vertical") < 0)
+            return Direction.Down;
 
-        if (Input.GetAxis("Vertical") > 0 && currentDirection != Direction.Down)
-            inputDirection = Direction.Up;
-        else if (Input.GetAxis("Vertical") < 0 && currentDirection != Direction.Up)
-            inputDirection = Direction.Down;
+        return Direction.Undefined;
     }
 
-    #endregion
+    Direction TouchInput()
+    {
+        if (Input.GetMouseButtonDown(0))
+            touchStarted = mainCamera.ScreenToViewportPoint(Input.mousePosition);
+        else if (Input.GetMouseButtonUp(0))
+        {
+            Vector2 touchEnded = mainCamera.ScreenToViewportPoint(Input.mousePosition);
+            Vector2 swipe = touchEnded - touchStarted;
+
+            if (swipe.magnitude > 0.1) //0.1 - minimal swipe size at % from screen
+            {
+                //Horizontal swipe? 
+                if (Mathf.Abs(swipe.x) > Mathf.Abs(swipe.y))
+                    return swipe.x > 0 ? Direction.Right : Direction.Left;
+                //else
+                    return swipe.y > 0 ? Direction.Up : Direction.Down;
+            }
+        }
+
+        return Direction.Undefined;
+    }
+
+#endregion
 
     #region NetwotkingMethods
     
