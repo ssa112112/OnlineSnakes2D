@@ -1,4 +1,5 @@
-﻿using Photon.Pun;
+﻿using ExitGames.Client.Photon;
+using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
 using UnityEngine;
@@ -42,11 +43,21 @@ public class WaitingPlayers : MonoBehaviourPunCallbacks
      /// </summary>
      void InitializeGame(int playersInRoom)
      {
+         //Generate ActorID
+         var actorID = PhotonNetwork.LocalPlayer.GetPlayerNumber() + 2;
+         
          //Create the Snake
          PhotonNetwork.Instantiate(NamePlayerObject,transform.position,Quaternion.identity,
-                 0,new object[]{PhotonNetwork.LocalPlayer.GetPlayerNumber()+2});
-         rating.Initialize(playersInRoom);
-             
+                 0,new object[]{actorID});
+
+         //Save ActorID
+         Hashtable hash = new Hashtable();
+         hash.Add(PlayerOptionKeys.ActorID, actorID);
+         PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
+         
+         //Activate rating
+         rating.Initialize(playersInRoom, actorID);
+
          if (PhotonNetwork.IsMasterClient)
          {
              //Deny join

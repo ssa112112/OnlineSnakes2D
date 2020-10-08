@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+//TODO: different color for head and body and, may be, rating  
 public static class ColorByActorID
 {
     /// <summary>

@@ -26,7 +26,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         //Set settings
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.GameVersion = "0.0.1";
-        
+
         //Register "custom" type for sync
         PhotonPeer.RegisterType(typeof(Vector2Int), 99, Vector2IntExtension.SerializeVector2Int,
             Vector2IntExtension.DeserializeVector2Int);
@@ -85,7 +85,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         //Set properties
         RoomOptions roomOptions = new RoomOptions();
-
+        
+        roomOptions.PlayerTtl = 250;
         roomOptions.MaxPlayers = (byte) playersInRoom; //MaxPlayers
         roomOptions.CustomRoomProperties = new Hashtable
         {

@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ExitGames.Client.Photon;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Photon.Pun;
-using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
 using Unity.Mathematics;
 using Object = System.Object;
@@ -24,6 +24,8 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
     const string TimePrefix = "TIME LEFT: ";
     const string GameWonText = "YOU ARE WON";
     const string GameLoseText = "YOU ARE LOSE";
+    const string AllPlayersDisconnectSuffix = "(all players are disconnect)";
+    const string GameEndTextFor1PlayerGames = "GAME IS END";
 
     /// <summary>
     /// Sorted (by snake.actorID) actuality list of snake scripts
@@ -110,22 +112,32 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         Fruit = fruit;
     }
+
+    #endregion
     
+    /// <summary>
+    /// Reaction on left. Deactivate the rating write and the snake.
+    /// </summary>
+    /// <param name="otherPlayer"></param>
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        //Unregister snake
-        var actorID = otherPlayer.GetPlayerNumber();
+        if (gameOver)
+            return;
+
+        var actorID = (int) otherPlayer.CustomProperties[PlayerOptionKeys.ActorID];
         for (var i = 0; i < Snakes.Count; i++)
         {
             if (Snakes[i].GetActorIDOfCreator() == actorID)
             {
-                Snakes.RemoveAt(i);
+                Snakes[i].Clear();
+                Snakes[i].Disconnect = true;
+                rating.PlayerLeft(actorID);
+                if (Snakes.Count(s => !s.Disconnect) < 2)
+                    CompleteGame(timeIsEnd: false);
                 return;
             }
         }
     }
-
-    #endregion
 
     #region HandlingInComingRemoteEvents
 
@@ -179,7 +191,7 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
         PhotonNetwork.RaiseEvent(RemoteEventNames.RegularStep, directions, raiseEventOptions, sendOptions);
 
         //Try respawn for deactivate snakes
-        foreach (var snake in Snakes)
+        foreach (var snake in Snakes.Where(s => !s.Disconnect))
         {
             if (snake.GetCurrentLenght() == 0)
                 snake.CreateRespawnEvent(); 
@@ -208,13 +220,26 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void CompleteGame(bool timeIsEnd)
     {
+        //Stop the game
+        gameOver = true;
+        
         //Create message box
         var gameOverMessageBoxLink = Instantiate(gameOverMessageBox);
         var gameOverText = gameOverMessageBoxLink.GetComponentInChildren<Text>();
+        
+        //If player was 1
+        if ((byte) PhotonNetwork.CurrentRoom.CustomProperties[RoomOptionKeys.PlayersInRoom] == 1)
+        {
+            gameOverText.text = GameEndTextFor1PlayerGames;
+            return;
+        }
+        
+        //If players were many 
         gameOverText.text = rating.AmIFist() ? GameWonText : GameLoseText;
-
-        //Stop the game
-        gameOver = true;
+        if (!timeIsEnd)
+        {
+            gameOverText.text += Environment.NewLine + AllPlayersDisconnectSuffix;
+        }
     }
 
     #region OnEnable/OnDisable

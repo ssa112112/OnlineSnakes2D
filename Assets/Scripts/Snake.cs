@@ -5,6 +5,8 @@ using Photon.Realtime;
 using UnityEngine;
 using Object = System.Object;
 
+//TODO: add bot mode
+
 /// <summary>
 /// A snake
 /// </summary>
@@ -22,6 +24,8 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
     LinkedList<Vector2Int> nodeCoordinates = new LinkedList<Vector2Int>(); //Coordinates of nodes. Head always first.
 
     bool grow; //If this snake eat fruit, this bool become true ( addNode() ) and its grow;
+
+    public bool Disconnect { get; set; }
 
     void Start()
     {
@@ -59,7 +63,7 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
     #region MethodsForChangeSnake
 
     /// <summary>
-    /// Restore snake for default position
+    /// Restore snake for uninitialized position
     /// </summary>
     public void Clear()
     {
@@ -88,10 +92,10 @@ public class Snake : MonoBehaviourPunCallbacks, IPunObservable, IOnEventCallback
         currentDirection = startPosition.Item2 == Direction.Left ? Direction.Right: Direction.Left;
     }
 
-    public void Respawn((Vector2Int, Direction) startPosition)
+    public void Respawn((Vector2Int, Direction) position)
     {
         Clear();
-        Spawn(startPosition);
+        Spawn(position);
     }
     
     public void MakeStepLocal(Direction to)

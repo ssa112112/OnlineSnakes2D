@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Photon.Pun;
-using Photon.Pun.UtilityScripts;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +8,7 @@ public class Rating : MonoBehaviourPunCallbacks
     [SerializeField] Text[] ratingBoard;
     RatingWrite[] ratingJournal;
     int playersInRoom;
-    
+
     const string YouPrefix = "YOU - ";
     const string OpponentPrefix = "FOE - ";
 
@@ -17,22 +16,24 @@ public class Rating : MonoBehaviourPunCallbacks
     /// Initialize when all players on place
     /// </summary>
     /// <param name="playersInRoom"></param>
-    public void Initialize(int playersInRoom)
+    /// <param name="myActorID"></param>
+    public void Initialize(int playersInRoom,int myActorID)
     {
         //Save playersCount
         this.playersInRoom = playersInRoom;
-        
+
         //Initialize journal
         ratingJournal = new RatingWrite[playersInRoom];
         for (var i = 0; i < playersInRoom; i++)
         {
-            ratingJournal[i] = new RatingWrite(i + 1, 0);
+            var actorIDForThisSnake = i + 1;
+            ratingJournal[i] = new RatingWrite(actorIDForThisSnake, 0,isMine: actorIDForThisSnake == myActorID);
         }
-        
+
         //Display!
         Display();
     }
-    
+
     /// <summary>
     /// Add score fot the snake. Auto update display.
     /// </summary>
@@ -45,13 +46,27 @@ public class Rating : MonoBehaviourPunCallbacks
             if (ratingJournal[i].ActorID == actorID)
                 ratingJournal[i].Score += score;
         }
+
         SortJournal();
         Display();
     }
 
     public bool AmIFist()
     {
-        return ratingJournal[0].IsMine;
+        return ratingJournal.First(w => w.IsActive).IsMine;
+    }
+
+    public void PlayerLeft(int actorID)
+    {
+        for (var i = 0; i < playersInRoom; i++)
+        {
+            if (ratingJournal[i].ActorID == actorID)
+            {
+                ratingJournal[i].Deactivate();
+                Display();
+                return;
+            }
+        }
     }
 
     void Display()
@@ -62,7 +77,7 @@ public class Rating : MonoBehaviourPunCallbacks
             //Set text
             ratingBoard[i].text = $"{i+1}) {prefix}{ratingJournal[i].Score}";
             //Set color
-            ratingBoard[i].color = ColorByActorID.Get(ratingJournal[i].ActorID);
+            ratingBoard[i].color = ratingJournal[i].IsActive ? ColorByActorID.Get(ratingJournal[i].ActorID) : Color.gray;
         }
     }
 
@@ -79,12 +94,19 @@ public class Rating : MonoBehaviourPunCallbacks
         public readonly int ActorID;
         public int Score { get; set; }
         public readonly bool IsMine;
+        public bool IsActive { get; private set; }
 
-        public RatingWrite(int actorID, int score)
+        public RatingWrite(int actorID, int score,bool isMine)
         {
             ActorID = actorID;
             Score = score;
-            IsMine = actorID == PhotonNetwork.LocalPlayer.GetPlayerNumber()+2;
+            IsMine = isMine;
+            IsActive = true;
+        }
+
+        public void Deactivate()
+        {
+            IsActive = false;
         }
     }
 
