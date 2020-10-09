@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ExitGames.Client.Photon;
@@ -146,10 +147,8 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public void OnEvent(EventData photonEvent)
     {
         if (photonEvent.Code == RemoteEventNames.RegularStep)
-        { 
-            Direction[] directions = (Direction[]) photonEvent.CustomData;
-            for (var i = 0; i< Snakes.Count;i++)
-                Snakes[i].MakeStepLocal(directions[i]);
+        {
+            StartCoroutine(MakeStepSafe( (Direction[]) photonEvent.CustomData));
         }
 
         if (photonEvent.Code == RemoteEventNames.SnakeDeadAndRespawn)
@@ -178,6 +177,23 @@ public class GameplayManager : MonoBehaviourPunCallbacks, IOnEventCallback
             Snakes[actorID-1].AddNode();
             rating.AddScore(PointsForFruit,actorID);
         }
+    }
+
+    /// <summary>
+    /// Make step only if all snakes already spawn
+    /// </summary>
+    /// <param name="directions"></param>
+    /// <returns></returns>
+    IEnumerator MakeStepSafe(Direction[] directions)
+    {
+        while (Snakes.Count != directions.Length)
+        {
+            Debug.Log("wait");
+            yield return null;
+        }
+
+        for (var i = 0; i< Snakes.Count;i++)
+            Snakes[i].MakeStepLocal(directions[i]);
     }
 
     #endregion
